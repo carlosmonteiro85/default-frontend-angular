@@ -36,3 +36,6 @@ Exemplo:
             { label: 'Categorias', icon: 'pi pi-tag', routerLink: ['/pages/categoria'] }
         ]
     },
+
+# 🚧 EM DESENVOLVIMENTO
+> Atualmente, estamos trabalhando na camada de serviços e mock de configurações.
