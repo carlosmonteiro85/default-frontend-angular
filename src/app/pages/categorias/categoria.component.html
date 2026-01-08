@@ -1,0 +1,176 @@
+<p-toolbar styleClass="mb-6">
+            <ng-template #start>
+                <p-button label="Novo" icon="pi pi-plus" severity="secondary" class="mr-2" (onClick)="openNew()" />
+                <p-button severity="secondary" label="Deletar" icon="pi pi-trash" outlined (onClick)="deleteSelectedProducts()" [disabled]="!selectedLancamentos || !selectedLancamentos.length" />
+            </ng-template>
+
+            <ng-template #end>
+                <p-button label="Export" icon="pi pi-upload" severity="secondary" (onClick)="exportCSV()" />
+            </ng-template>
+        </p-toolbar>
+
+        <div style="display: flex; justify-content: center;">
+            <p-table
+                #dt
+                [value]="lancamentos()"
+                [rows]="10"
+                [columns]="colunas"
+                [paginator]="true"
+                [globalFilterFields]="['categoria', 'status']"
+                [tableStyle]="{ 'min-width': '75rem' }"
+                [(selection)]="selectedLancamentos"
+                [rowHover]="true"
+                dataKey="id"
+                currentPageReportTemplate="Showing {first} to {last} of {totalRecords} lancamentos"
+                [showCurrentPageReport]="true"
+                [rowsPerPageOptions]="[10, 20, 30]"
+            >
+                <ng-template #caption>
+                    <div class="flex items-center justify-between">
+                        <h5 class="m-0">Categorias</h5>
+                        <p-iconfield>
+                            <p-inputicon styleClass="pi pi-search" />
+                            <input pInputText type="text" (input)="onGlobalFilter(dt, $event)" placeholder="Search..." />
+                        </p-iconfield>
+                    </div>
+                </ng-template>
+                <ng-template #header>
+                    <tr>
+                        <th style="width: 3rem">
+                            <p-tableHeaderCheckbox />
+                        </th>
+                        <th pSortableColumn="data" style="min-width:3rem">
+                            Data
+                            <p-sortIcon field="name" />
+                        </th>
+                        <th pSortableColumn="categoria" style="min-width: 12rem">
+                            Categoria
+                            <p-sortIcon field="categoria" />
+                        </th>
+                        <th pSortableColumn="descricao" style="min-width:18rem">
+                            Descrição
+                            <p-sortIcon field="descricao" />
+                        </th>
+                        <th pSortableColumn="impactoReceita" style="min-width: 7rem">
+                            Impacto na receita
+                            <p-sortIcon field="impactoReceita" />
+                        </th>
+                        <th pSortableColumn="valor" style="min-width: 7rem">
+                            Valor
+                            <p-sortIcon field="valor" />
+                        </th>
+                        <th pSortableColumn="dataVencimento" style="min-width: 6rem">
+                            Data vencimento
+                            <p-sortIcon field="dataVencimento" />
+                        </th>
+                        <th pSortableColumn="dataPagamento" style="min-width: 6rem">
+                            Data pagamento
+                            <p-sortIcon field="dataPagamento" />
+                        </th>
+                        <th pSortableColumn="status" style="min-width: 12rem">
+                            Status
+                            <p-sortIcon field="status" />
+                        </th>
+                        <th style="min-width: 12rem"></th>
+                    </tr>
+                </ng-template>
+                <ng-template #body let-lanc>
+                    <tr>
+                        <td style="width: 3rem">
+                            <p-tableCheckbox [value]="lanc" />
+                        </td>
+                        <td>{{ lanc.data | date: 'dd/MM/yyyy' }}</td>
+                        <td>{{ lanc.categoria }}</td>
+                        <td>{{ lanc.descricao }}</td>
+                        <td>{{ lanc.impactoReceita }}</td>
+                        <td>{{ lanc.valor | currency: 'BRL' }}</td>
+                        <td>{{ lanc.dataVencimento | date: 'dd/MM/yyyy' }}</td>
+                        <td>{{ lanc.dataPagamento ? (lanc.dataPagamento | date: 'dd/MM/yyyy') : '-' }}</td>
+                        <td>
+                            <p-tag [value]="lanc.status" [severity]="getSeverity(lanc.status)" />
+                        </td>
+                        <td>
+                            <p-button icon="pi pi-pencil" class="mr-2" [rounded]="true" [outlined]="true" (click)="editLancamento(lanc)" />
+                            <p-button icon="pi pi-trash" severity="danger" [rounded]="true" [outlined]="true" (click)="deleteLancamento(lanc)" />
+                        </td>
+                    </tr>
+                </ng-template>
+            </p-table>
+        </div>
+        <p-dialog [(visible)]="lancamentoDialog" [style]="{ width: '800px' }" header="Criar lançamento" [modal]="true" [draggable]="false" [resizable]="true">
+            <ng-template #content>
+                <div class="p-fluid grid formgrid">
+
+                    <!-- Tipo lançamento -->
+                    <div class="field col-12 md:col-1">
+                        <label for="tipoLancamento">Tipo lançamento</label>
+                        <p-select id="tipoLancamento" [options]="dropdownItems" optionLabel="name" optionValue="code" placeholder="Selecione uma opção" required class="w-full"></p-select>
+                        <small class="p-error">Campo obrigatório.</small>
+                    </div>
+
+                    <!-- Data cadastro -->
+                    <div class="field col-12 md:col-2 ml-5">
+                        <label for="data">Data cadastro</label>
+                        <p-datepicker id="data" [showIcon]="true" [(ngModel)]="lancamento.data" placeholder="dd/mm/aaaa" class="w-full"></p-datepicker>
+                    </div>
+
+                    <!-- Categoria -->
+                    <div class="field col-12 md:col-1 mt-5">
+                        <label for="categoria">Categoria</label>
+                        <p-select id="categoria" [options]="dropdownItems" optionLabel="name" optionValue="code" placeholder="Selecione uma opção" class="w-full"></p-select>
+                    </div>
+
+                    <!-- Descrição -->
+                    <div class="field col-12 md:col-2 mt-5 ml-5">
+                        <label for="descricao">Descrição</label>
+                        <input id="descricao" pInputText [(ngModel)]="lancamento.descricao" placeholder="Digite a descrição" class="w-full" />
+                    </div>
+
+                    <!-- Valor -->
+                    <div class="field col-12 md:col-1 mt-5 ">
+                        <label for="valor">Valor</label>
+                        <p-inputnumber id="valor" [(ngModel)]="lancamento.valor" mode="currency" currency="BRL" locale="pt-BR" class="w-full"></p-inputnumber>
+                    </div>
+
+                    <div class="field col-12 md:col-2 ml-5 mt-5">
+                        <label for="dataVencimento">Data vencimento</label>
+                        <p-datepicker id="dataVencimento" [showIcon]="true" [(ngModel)]="lancamento.dataVencimento" placeholder="dd/mm/aaaa" class="w-full"></p-datepicker>
+                    </div>
+
+                    <!-- Data pagamento -->
+                    <div class="field col-12 md:col-1 mt-5 ">
+                        <label for="dataPagamento">Pago em</label>
+                        <p-datepicker id="dataPagamento" [showIcon]="true" [(ngModel)]="lancamento.dataPagamento" placeholder="dd/mm/aaaa" class="w-full"></p-datepicker>
+                    </div>
+
+                    <!-- Status -->
+                    <div class="field col-12 md:col-2 ml-5 mt-5">
+                        <label for="status">Status</label>
+                        <p-select id="status" [(ngModel)]="lancamento.status" [options]="statuses" optionLabel="label" optionValue="label" placeholder="Selecione uma opção" class="w-full"></p-select>
+                    </div>
+                    <!-- Comprovantes -->
+                    <div class="field col-1 mt-5">
+                        <label for="comprovantes">Comprovantes</label>
+                        <p-fileUpload id="comprovantes" mode="basic" chooseLabel="Selecionar arquivos" [maxFileSize]="5000000" [multiple]="true" [auto]="false" class="w-full"></p-fileUpload>
+                        <small>Você pode anexar até 3 arquivos.</small>
+                    </div>
+
+                    <!-- Duplicar lançamento -->
+                    <!-- <div class="field col-12 flex align-items-center gap-2">
+                        <p-inputswitch [(ngModel)]="lancamento.duplicar"></p-inputswitch>
+                        <label>Duplicar lançamento</label>
+                    </div> -->
+
+                    <div class="field col-1 mt-5">
+                        <small class="text-muted">Os detalhes acima referem-se aos lançamentos mensais cadastrados</small>
+                    </div>
+                </div>
+            </ng-template>
+
+            <ng-template #footer class="mt-5">
+                <p-button label="Salvar" icon="pi pi-check" (click)="saveProduct()" />
+                <p-button label="Cancelar" icon="pi pi-times" severity="secondary" (click)="hideDialog()" />
+            </ng-template>
+        </p-dialog>
+
+        <p-confirmdialog [style]="{ width: '450px' }" />
