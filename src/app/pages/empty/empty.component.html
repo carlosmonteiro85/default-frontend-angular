@@ -1,0 +1,13 @@
+<app-loading *ngIf="loading"></app-loading>
+
+<div *ngIf="!loading">
+
+    <div class="mb-5">
+        <p-breadcrumb [model]="breadcrumbItems" [home]="breadcrumbHome"></p-breadcrumb>
+    </div>
+
+    <div class="card">
+        <div class="font-semibold text-xl mb-4">Página vazia</div>
+        <p>Utilize esta página para iniciar um novo projeto e adicionar seu próprio conteúdo.</p>
+    </div>
+</div>

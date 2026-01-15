@@ -1,7 +1,7 @@
 import { Routes } from '@angular/router';
 import { Documentation } from './documentation/documentation';
-import { Crud } from './crud/crud';
-import { Empty } from './empty/empty';
+import { Crud } from './crud/crud.componer';
+import { EmptyComponent } from './empty/empty.component';
 import { LancamentoComponent } from './lancamentos/lancamento.component';
 import { CategoriaComponent } from './categorias/categoria.component';
 import { roleGuard } from './auth/auth-role.guard';
@@ -18,16 +18,16 @@ export default [
     { 
         path: 'lancamento', 
         component: LancamentoComponent,
-        canActivate: [roleGuard('ADMIN')] 
+        canActivate: [roleGuard('admin')] 
     },
     { 
         path: 'categoria', 
         component: CategoriaComponent,
-        canActivate: [roleGuard('ADMIN')]  
+        canActivate: [roleGuard('admin')]  
     },
     { 
         path: 'empty', 
-        component: Empty },
+        component: EmptyComponent },
     { 
         path: '**', 
         redirectTo: '/notfound' 
